@@ -1,1 +1,86 @@
-{"setting": [{"period": {"mode": 2, "group": 1, "loss": 0}, "pivots": [{"count": 2, "limit": 3}, {"count": 2, "limit": 3}, {"count": 2, "limit": 3}, {"count": 2, "limit": 3}]}, {"period": {"mode": 2, "group": 1, "loss": 0}, "pivots": [{"count": 1, "limit": 2}, {"count": 1, "limit": 2}, {"count": 1, "limit": 2}, {"count": 1, "limit": 2}]}, {"period": {"mode": 2, "group": 1, "loss": 0}, "pivots": [{"count": 0, "limit": 1}, {"count": 0, "limit": 1}, {"count": 0, "limit": 1}, {"count": 0, "limit": 1}]}], "state": {"chan": false, "skdj": true, "buy": false, "short": true, "worth": true}}
+{
+    "setting": [
+        {
+            "period": {
+                "mode": 2,
+                "group": 1,
+                "loss": 0
+            },
+            "pivots": [
+                {
+                    "count": 2,
+                    "limit": 3
+                },
+                {
+                    "count": 2,
+                    "limit": 3
+                },
+                {
+                    "count": 2,
+                    "limit": 3
+                },
+                {
+                    "count": 2,
+                    "limit": 3
+                }
+            ]
+        },
+        {
+            "period": {
+                "mode": 2,
+                "group": 1,
+                "loss": 0
+            },
+            "pivots": [
+                {
+                    "count": 1,
+                    "limit": 2
+                },
+                {
+                    "count": 1,
+                    "limit": 2
+                },
+                {
+                    "count": 1,
+                    "limit": 2
+                },
+                {
+                    "count": 1,
+                    "limit": 2
+                }
+            ]
+        },
+        {
+            "period": {
+                "mode": 2,
+                "group": 1,
+                "loss": 0
+            },
+            "pivots": [
+                {
+                    "count": 0,
+                    "limit": 1
+                },
+                {
+                    "count": 0,
+                    "limit": 1
+                },
+                {
+                    "count": 0,
+                    "limit": 1
+                },
+                {
+                    "count": 0,
+                    "limit": 1
+                }
+            ]
+        }
+    ],
+    "state": {
+        "chan": false,
+        "skdj": true,
+        "buy": false,
+        "short": true,
+        "worth": true
+    }
+}

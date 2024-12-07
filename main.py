@@ -163,18 +163,18 @@ def daily(length):
             if t > opened:
                 openly = ods[open]
                 opener = highs[-1] if openly > 0 else lows[-1]
-                print('open date:%d(%d)-%d(%d) index:%d flag:%d %s value:%.2f' %(
+                print('open  at date:%d(%d)-%d(%d) index:%d %s value:%.2f flag:%d' %(
                     dates[open],
                     dates[-1],
                     times[open],
                     times[-1],
                     open,
-                    oss[open],
                     'enter long' if openly > 0 else 'enter short',
-                    opener))
+                    opener,
+                    oss[open]))
             if opened > t and openly != 0:
                 temp = highs[-1] if openly > 0 else lows[-1]
-                print('last date:%d-%d lost point value:%.2f' %(dates[-1], times[-1], temp))
+                print('lost  at date:%d-%d point value:%.2f' %(dates[-1], times[-1], temp))
                 openly = 0
             opened = t
 
@@ -183,13 +183,13 @@ def daily(length):
         if closed != t:
             if t > closed:
                 temp = highs[-1] if openly > 0 else lows[-1]
-                print('close date:%d(%d)-%d(%d) indes:%d %s value:%.2f' %(
+                print('close at date:%d(%d)-%d(%d) indes:%d %s value:%.2f' %(
                     dates[close],
                     dates[-1],
                     times[close],
                     times[-1],
                     close,
-                    'exit long' if cds[close] < 0 else 'exit short',
+                    'exit  long' if cds[close] < 0 else 'exit  short',
                     temp))
                 if (openly > 0 and cds[close] < 0) or (openly < 0 and cds[close] > 0):
                     openly = 0
