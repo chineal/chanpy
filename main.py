@@ -262,7 +262,20 @@ def daily(length):
                 closer = closes[-1]
                 lates = (len(dates) - close) - 1
 
-                profit = ('%.2f' % (closer - opener) if openly > 0 else '%.2f' % (opener - closer)) if closat - openat > 0 and openat > 0 else 'null'
+                if closat - openat > 0 and openat > 0:
+                    trade_count += 1
+                    exit_count  += 1
+                    if openly > 0:
+                        exit_longs += 1
+                        profit_count += closer - opener
+                        profit = '%.2f' % (closer - opener)
+                    else:
+                        exit_shorts += 1
+                        profit_count += opener - close
+                        profit = '%.2f' % (opener - closer)
+                else: 
+                    profit = 'null'
+
                 openid = 0
                 openat = 0
                 openly = 0
