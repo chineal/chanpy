@@ -208,12 +208,6 @@ def daily(length):
                     opener = closes[-1]
                     openat = dates[-1] * 1000000 + times[-1]
 
-                    trade_count += 1
-                    enter_count += 1
-                    if openly > 1:
-                        enter_longs += 1
-                    else:
-                        enter_shorts += 1
                 print('open  at date:%d(%d)-%d(%d) lates:%d index:%d %s value:%.2f flag:%d' %(
                     dates[open],
                     dates[-1],
@@ -236,14 +230,21 @@ def daily(length):
 
                     if closat - openat > 0 and openat > 0:
                         trade_count += 1
+                        enter_count += 1
+                        if openly > 1:
+                            enter_longs += 1
+                        else:
+                            enter_shorts += 1
+                            
+                        trade_count += 1
                         exit_count  += 1
                         if openly > 0:
                             exit_longs += 1
-                            profit_count += closer - opener
+                            profit_count += (closer - opener)
                             profit = '%.2f' % (closer - opener)
                         else:
                             exit_shorts += 1
-                            profit_count += opener - close
+                            profit_count += (opener - closer)
                             profit = '%.2f' % (opener - closer)
                     else: 
                         profit = 'null'
@@ -264,14 +265,21 @@ def daily(length):
 
                 if closat - openat > 0 and openat > 0:
                     trade_count += 1
+                    enter_count += 1
+                    if openly > 1:
+                        enter_longs += 1
+                    else:
+                        enter_shorts += 1
+                            
+                    trade_count += 1
                     exit_count  += 1
                     if openly > 0:
                         exit_longs += 1
-                        profit_count += closer - opener
+                        profit_count += (closer - opener)
                         profit = '%.2f' % (closer - opener)
                     else:
                         exit_shorts += 1
-                        profit_count += opener - close
+                        profit_count += (opener - close)
                         profit = '%.2f' % (opener - closer)
                 else: 
                     profit = 'null'
@@ -308,7 +316,7 @@ def clear_chan():
     global exit_longs
     global exit_shorts
     global profit_count
-    print('trade:%d enter:%d %d %d exit:%d %d %d profit:%d' % (
+    print('trade:%d enter:%d %d %d exit:%d %d %d profit:%.2f' % (
         trade_count, enter_count, enter_longs, enter_shorts,
         exit_count, exit_longs, exit_shorts, profit_count))
     schedule.clear('s_chan')
@@ -343,11 +351,11 @@ def backtest_chan():
             recode(start)
             for i in range(((11-9)+(15-13))*60):
                 daily(i+1)
+            print('trade:%d enter:%d %d %d exit:%d %d %d profit:%.2f' % (
+                trade_count, enter_count, enter_longs, enter_shorts,
+                exit_count, exit_longs, exit_shorts, profit_count))
         start = start + relativedelta(days=1)
     print('耗时: {:.2f}秒'.format(time.time() - st))
-    print('trade:%d enter:%d %d %d exit:%d %d %d profit:%d' % (
-        trade_count, enter_count, enter_longs, enter_shorts,
-        exit_count, exit_longs, exit_shorts, profit_count))
 
 if __name__ == "__main__":
     #schedule_chan()
