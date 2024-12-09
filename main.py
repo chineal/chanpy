@@ -18,9 +18,9 @@ rust_chan_dll   = ctypes.CDLL('rust_chan.dll')
 def f2p(number):
     return ctypes.pointer(ctypes.c_float(number))
 
-historys = []
-bigest = 0
-nexter = 0
+historys = []   #历史数据加载
+bigest = 0      #最大历史数据
+nexter = 0      #运行数据开始
 def recode(day):
     global historys
     global bigest
@@ -45,11 +45,40 @@ def recode(day):
     for file in files:
         df = pd.read_csv('.\datas\%d.csv' % file, encoding='utf-8')
         historys.extend(df.values.tolist())
+    print('data start:%d data size:%d file count:%d' %(start, len(historys), len(files)))
 
-closed = 0
-opened = 0
-openly = 0
-opener = 0
+trade_count     = 0 #交易数量
+enter_count     = 0 #开仓数量
+enter_longs     = 0 #买开数量
+enter_shorts    = 0 #卖开数量
+exit_count      = 0 #平仓数量
+exit_longs      = 0 #卖平数量
+exit_shorts     = 0 #买平数量
+profit_count    = 0 #盈亏统计
+def init():
+    global trade_count
+    global enter_count
+    global enter_longs
+    global enter_shorts
+    global exit_count
+    global exit_longs
+    global exit_shorts
+    global profit_count
+    trade_count     = 0
+    enter_count     = 0
+    enter_longs     = 0
+    enter_shorts    = 0
+    exit_count      = 0
+    exit_longs      = 0
+    exit_shorts     = 0
+    profit_count    = 0
+
+closed = 0  #平仓点数量记录
+opened = 0  #开仓点数量记录
+openly = 0  #开仓点方向记录
+opener = 0  #开仓点数值记录
+openat = 0  #开仓时间戳记录
+openid = 0  #开仓点标识记录
 rust_chan_dll.RegisterCpyInit()
 def daily(length):
     global historys
@@ -59,6 +88,17 @@ def daily(length):
     global opened
     global openly
     global opener
+    global openat
+    global openid
+
+    global trade_count
+    global enter_count
+    global enter_longs
+    global enter_shorts
+    global exit_count
+    global exit_longs
+    global exit_shorts
+    global profit_count
 
     if length > 0 and nexter > 0:
         df = pd.read_csv('.\datas\%d.csv' % nexter, encoding='utf-8')
@@ -161,72 +201,140 @@ def daily(length):
         t = dates[open] * 1000000 + times[open]
         if opened != t:
             if t > opened:
-                openly = ods[open]
-                opener = highs[-1] if openly > 0 else lows[-1]
-                print('open  at date:%d(%d)-%d(%d) index:%d %s value:%.2f flag:%d' %(
+                lates = (len(dates) - open) - 1
+                if openat == 0:
+                    openid = t
+                    openly = ods[open]
+                    opener = closes[-1]
+                    openat = dates[-1] * 1000000 + times[-1]
+
+                    trade_count += 1
+                    enter_count += 1
+                    if openly > 1:
+                        enter_longs += 1
+                    else:
+                        enter_shorts += 1
+                print('open  at date:%d(%d)-%d(%d) lates:%d index:%d %s value:%.2f flag:%d' %(
                     dates[open],
                     dates[-1],
                     times[open],
                     times[-1],
-                    open,
-                    'enter long' if openly > 0 else 'enter short',
+                    lates,
+                    closes[-1],
+                    'enter long' if ods[open] > 0 else 'enter short',
                     opener,
                     oss[open]))
             if opened > t and openly != 0:
-                temp = highs[-1] if openly > 0 else lows[-1]
-                print('lost  at date:%d-%d point value:%.2f' %(dates[-1], times[-1], temp))
-                openly = 0
+                index = -1
+                for i in range(count):
+                    if dates[i] * 1000000 + times[i] == openid:
+                        index = i
+                if index >=0 and ods[index] == 0:
+                    lates = (len(dates) - index) - 1
+                    closat = dates[-1] * 1000000 + times[-1]
+                    closer = closes[-1]
+
+                    if closat - openat > 0 and openat > 0:
+                        trade_count += 1
+                        exit_count  += 1
+                        if openly > 0:
+                            exit_longs += 1
+                            profit_count += closer - opener
+                            profit = '%.2f' % (closer - opener)
+                        else:
+                            exit_shorts += 1
+                            profit_count += opener - close
+                            profit = '%.2f' % (opener - closer)
+                    else: 
+                        profit = 'null'
+
+                    openid = 0
+                    openat = 0
+                    openly = 0
+                    print('lost  at date:%d-%d lates:%d point value:%.2f profit:%s' %(dates[-1], times[-1], lates, closer, profit))
             opened = t
 
     if close > 0:
         t = dates[close] * 1000000 + times[close]
         if closed != t:
             if t > closed:
-                temp = highs[-1] if openly > 0 else lows[-1]
-                print('close at date:%d(%d)-%d(%d) indes:%d %s value:%.2f' %(
+                closat = dates[-1] * 1000000 + times[-1]
+                closer = closes[-1]
+                lates = (len(dates) - close) - 1
+
+                profit = ('%.2f' % (closer - opener) if openly > 0 else '%.2f' % (opener - closer)) if closat - openat > 0 and openat > 0 else 'null'
+                openid = 0
+                openat = 0
+                openly = 0
+                
+                print('close at date:%d(%d)-%d(%d) lates:%d index:%d %s value:%.2f profit:%s' %(
                     dates[close],
                     dates[-1],
                     times[close],
                     times[-1],
+                    lates,
                     close,
                     'exit  long' if cds[close] < 0 else 'exit  short',
-                    temp))
-                if (openly > 0 and cds[close] < 0) or (openly < 0 and cds[close] > 0):
-                    openly = 0
+                    closer,
+                    profit))
             closed = t
-
 
 def run():
     daily(0)
 def sched_chan():
-    schedule.every().minute.at(":01").do(run).tag("s_chan")
-    print("chan runing")
+    init()
+    recode(datetime.now())
+    schedule.every().minute.at(':01').do(run).tag('s_chan')
+    print('chan runing')
 def clear_chan():
-    schedule.clear("s_chan")
-    print("chan stoped")
+    global trade_count
+    global enter_count
+    global enter_longs
+    global enter_shorts
+    global exit_count
+    global exit_longs
+    global exit_shorts
+    global profit_count
+    print('trade:%d enter:%d %d %d exit:%d %d %d profit:%d' % (
+        trade_count, enter_count, enter_longs, enter_shorts,
+        exit_count, exit_longs, exit_shorts, profit_count))
+    schedule.clear('s_chan')
+    print('chan stoped')
 schedule.every().day.at('09:29:55').do(sched_chan)
 schedule.every().day.at('12:59:55').do(sched_chan)
 schedule.every().day.at('11:30:05').do(clear_chan)
 schedule.every().day.at('15:00:05').do(clear_chan)
 
 def schedule_chan():
-    recode(datetime.now())
     sched_chan()
     while True:
         schedule.run_pending()
         time.sleep(1)
 
 def backtest_chan():
+    global trade_count
+    global enter_count
+    global enter_longs
+    global enter_shorts
+    global exit_count
+    global exit_longs
+    global exit_shorts
+    global profit_count
+    
+    init()
     st = time.time()
-    start = datetime.strptime('2023-09-23 09:30:00', '%Y-%m-%d %H:%M:%S')
+    start = datetime.strptime('2024-11-09 09:30:00', '%Y-%m-%d %H:%M:%S')
     for j in range(30):
-        start = start + relativedelta(days=1)
         flag = int(start.strftime('%y%m%d'))
         if os.path.exists('.\datas\%d.csv' % flag):
             recode(start)
             for i in range(((11-9)+(15-13))*60):
                 daily(i+1)
-    print("耗时: {:.2f}秒".format(time.time() - st))
+        start = start + relativedelta(days=1)
+    print('耗时: {:.2f}秒'.format(time.time() - st))
+    print('trade:%d enter:%d %d %d exit:%d %d %d profit:%d' % (
+        trade_count, enter_count, enter_longs, enter_shorts,
+        exit_count, exit_longs, exit_shorts, profit_count))
 
 if __name__ == "__main__":
     #schedule_chan()
