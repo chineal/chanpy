@@ -279,7 +279,7 @@ def daily(length):
                         profit = '%.2f' % (closer - opener)
                     else:
                         exit_shorts += 1
-                        profit_count += (opener - close)
+                        profit_count += (opener - closer)
                         profit = '%.2f' % (opener - closer)
                 else: 
                     profit = 'null'
