@@ -55,6 +55,7 @@ exit_count      = 0 #平仓数量
 exit_longs      = 0 #卖平数量
 exit_shorts     = 0 #买平数量
 profit_count    = 0 #盈亏统计
+lost_count      = 0 #开仓点消失统计
 def init():
     global trade_count
     global enter_count
@@ -64,6 +65,7 @@ def init():
     global exit_longs
     global exit_shorts
     global profit_count
+    global lost_count
     trade_count     = 0
     enter_count     = 0
     enter_longs     = 0
@@ -72,6 +74,7 @@ def init():
     exit_longs      = 0
     exit_shorts     = 0
     profit_count    = 0
+    lost_count      = 0
 
 closed = 0  #平仓点数量记录
 opened = 0  #开仓点数量记录
@@ -99,6 +102,7 @@ def daily(length):
     global exit_longs
     global exit_shorts
     global profit_count
+    global lost_count
 
     if length > 0 and nexter > 0:
         df = pd.read_csv('.\datas\%d.csv' % nexter, encoding='utf-8')
@@ -231,6 +235,7 @@ def daily(length):
                     if closat - openat > 0 and openat > 0:
                         trade_count += 1
                         enter_count += 1
+                        lost_count  += 1
                         if openly > 1:
                             enter_longs += 1
                         else:
@@ -316,9 +321,10 @@ def clear_chan():
     global exit_longs
     global exit_shorts
     global profit_count
-    print('trade:%d enter:%d %d %d exit:%d %d %d profit:%.2f' % (
+    global lost_count
+    print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
         trade_count, enter_count, enter_longs, enter_shorts,
-        exit_count, exit_longs, exit_shorts, profit_count))
+        exit_count, exit_longs, exit_shorts, lost_count, profit_count))
     schedule.clear('s_chan')
     print('chan stoped')
 schedule.every().day.at('09:29:55').do(sched_chan)
@@ -327,7 +333,7 @@ schedule.every().day.at('11:30:05').do(clear_chan)
 schedule.every().day.at('15:00:05').do(clear_chan)
 
 def schedule_chan():
-    sched_chan()
+    #sched_chan()
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -341,19 +347,20 @@ def backtest_chan():
     global exit_longs
     global exit_shorts
     global profit_count
+    global lost_count
     
     init()
     st = time.time()
-    start = datetime.strptime('2024-11-09 09:30:00', '%Y-%m-%d %H:%M:%S')
-    for j in range(30):
+    start = datetime.strptime('2024-12-09 09:30:00', '%Y-%m-%d %H:%M:%S')
+    for j in range(2):
         flag = int(start.strftime('%y%m%d'))
         if os.path.exists('.\datas\%d.csv' % flag):
             recode(start)
             for i in range(((11-9)+(15-13))*60):
                 daily(i+1)
-            print('trade:%d enter:%d %d %d exit:%d %d %d profit:%.2f' % (
+            print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
                 trade_count, enter_count, enter_longs, enter_shorts,
-                exit_count, exit_longs, exit_shorts, profit_count))
+                exit_count, exit_longs, exit_shorts, lost_count, profit_count))
         start = start + relativedelta(days=1)
     print('耗时: {:.2f}秒'.format(time.time() - st))
 

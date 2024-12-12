@@ -77,7 +77,7 @@ def vnpy(parse: ParseResult):
     if '2' == flag[:1] and len(flag) == 4 and IxHandler.state['skdj']:
         print('skdj is blocking')
         return
-    if '1' == key and IxHandler.statek['buy']:
+    if '1' == key and IxHandler.state['buy']:
         print('buy is blocking')
         return
     if '2' == key and IxHandler.state['short']:
