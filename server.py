@@ -71,16 +71,16 @@ def vnpy(parse: ParseResult):
     sign = query.get('sign', [''])[0]
     key = query.get('key', [''])[0]
     stamp = query.get('stamp', [''])[0]
-    if '1' == flag[:1] and len(flag) == 4 and IxHandler.state['chan']:
+    if '1' == flag[:1] and len(flag) == 4 and not IxHandler.state['chan']:
         print('chan is blocking')
         return
-    if '2' == flag[:1] and len(flag) == 4 and IxHandler.state['skdj']:
+    if '2' == flag[:1] and len(flag) == 4 and not IxHandler.state['skdj']:
         print('skdj is blocking')
         return
-    if '1' == key and IxHandler.state['buy']:
+    if '1' == key and not IxHandler.state['buy']:
         print('buy is blocking')
         return
-    if '2' == key and IxHandler.state['short']:
+    if '2' == key and not IxHandler.state['short']:
         print('short is blocking')
         return 
     if 3 <= int(key) and IxHandler.state['worth']:
