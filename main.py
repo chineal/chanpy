@@ -104,7 +104,7 @@ class chan:
     
     def input(self, length, path, flag, key):
         currents, high, low, close, start = self.currently(length, path, flag)
-        self._call(key, currents, high, low, close, start)
+        return self._call(key, currents, high, low, close, start)
 
     def output(self, count, length, path, flag, key):
         period  = f2p(key)
