@@ -101,67 +101,10 @@ class chan:
     def currenter(self, length, path, flag):
         currents, high, low, close, start = self.currently(length, path, flag)
         return currents, close, start
-
+    
     def input(self, length, path, flag, key):
-        currents, index_high, index_low, index_close, start = self.currently(length, path, flag)
-        count = len(self.historys) + (len(currents) - start)
-        buf = ctypes.c_float * count
-        out = buf()
-
-        dates   = buf()
-        times   = buf()
-        highs   = buf()
-        lows    = buf()
-        closes  = buf()
-
-        mhs     = buf()
-        mls     = buf()
-        chs     = buf()
-        cls     = buf()
-        fracs   = buf()
-
-        i = 0
-        for history in self.historys:
-            dt          = datetime.strptime(history[0], "%Y-%m-%d %H:%M:%S")
-            dates[i]    = int(dt.strftime('%y%m%d'))
-            times[i]    = int(dt.strftime('%H%M%S'))
-            highs[i]    = history[3]
-            lows[i]     = history[4]
-            closes[i]   = history[2]
-            i += 1
-        for j in range(start, len(currents)):
-            dt          = datetime.strptime(currents[j][0], "%Y-%m-%d %H:%M:%S")
-            dates[i]    = int(dt.strftime('%y%m%d'))
-            times[i]    = int(dt.strftime('%H%M%S'))
-            highs[i]    = currents[j][index_high]
-            lows[i]     = currents[j][index_low]
-            closes[i]   = currents[j][index_close]
-            i += 1
-
-        #print('data:%d-%d time:%d' % (dates[0], dates[count - 1], times[count - 1]))
-        period  = f2p(key)
-
-        result = rust_chan_dll.RegisterCpyFunc(2, count, mhs, highs, lows, f2p(1))
-        result = rust_chan_dll.RegisterCpyFunc(2, count, mls, highs, lows, f2p(-1))
-        for i in range(count):
-            chs[i] = mhs[i] if mhs[i]>0 else highs[i]
-            cls[i] = mls[i] if mls[i]>0 else lows[i]
-
-        result = rust_chan_dll.RegisterCpyFunc(3, count, fracs, highs, lows, f2p(13))
-
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(0),   period, f2p(9))
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(1),   period, f2p(0))
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(11),  period, dates)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(12),  period, times)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(13),  period, fracs)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(14),  period, chs)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(15),  period, cls)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(16),  period, closes)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(17),  period, highs)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(18),  period, lows)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(99),  period, f2p(0))
-        #print('result:%d out:%d' % (result, out[0]))
-        return count
+        currents, high, low, close, start = self.currently(length, path, flag)
+        self._call(key, currents, high, low, close, start)
 
     def output(self, count, length, path, flag, key):
         period  = f2p(key)
@@ -311,6 +254,66 @@ class chan:
                         profit))
                 self.closed = t
 
+    def _call(self, key, currents, index_high, index_low, index_close, start):
+        count = len(self.historys) + (len(currents) - start)
+        buf = ctypes.c_float * count
+        out = buf()
+
+        dates   = buf()
+        times   = buf()
+        highs   = buf()
+        lows    = buf()
+        closes  = buf()
+
+        mhs     = buf()
+        mls     = buf()
+        chs     = buf()
+        cls     = buf()
+        fracs   = buf()
+
+        i = 0
+        for history in self.historys:
+            dt          = datetime.strptime(history[0], "%Y-%m-%d %H:%M:%S")
+            dates[i]    = int(dt.strftime('%y%m%d'))
+            times[i]    = int(dt.strftime('%H%M%S'))
+            highs[i]    = history[3]
+            lows[i]     = history[4]
+            closes[i]   = history[2]
+            i += 1
+        for j in range(start, len(currents)):
+            dt          = datetime.strptime(currents[j][0], "%Y-%m-%d %H:%M:%S")
+            dates[i]    = int(dt.strftime('%y%m%d'))
+            times[i]    = int(dt.strftime('%H%M%S'))
+            highs[i]    = currents[j][index_high]
+            lows[i]     = currents[j][index_low]
+            closes[i]   = currents[j][index_close]
+            i += 1
+
+        #print('data:%d-%d time:%d' % (dates[0], dates[count - 1], times[count - 1]))
+        period  = f2p(key)
+
+        result = rust_chan_dll.RegisterCpyFunc(2, count, mhs, highs, lows, f2p(1))
+        result = rust_chan_dll.RegisterCpyFunc(2, count, mls, highs, lows, f2p(-1))
+        for i in range(count):
+            chs[i] = mhs[i] if mhs[i]>0 else highs[i]
+            cls[i] = mls[i] if mls[i]>0 else lows[i]
+
+        result = rust_chan_dll.RegisterCpyFunc(3, count, fracs, highs, lows, f2p(13))
+
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(0),   period, f2p(9))
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(1),   period, f2p(0))
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(11),  period, dates)
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(12),  period, times)
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(13),  period, fracs)
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(14),  period, chs)
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(15),  period, cls)
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(16),  period, closes)
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(17),  period, highs)
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(18),  period, lows)
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(99),  period, f2p(0))
+        #print('result:%d out:%d' % (result, out[0]))
+        return count
+
 chan_max = chan()
 chan_mid = chan()
 chan_min = chan()
@@ -346,11 +349,11 @@ def backtest_chan():
     chan_min.init()
 
     st = time.time()
-    start = datetime.strptime('2024-12-01 09:30:00', '%Y-%m-%d %H:%M:%S')
+    start = datetime.strptime('2023-01-01 09:30:00', '%Y-%m-%d %H:%M:%S')
     #start = datetime.strptime('2024-12-18 15:00:00', '%Y-%m-%d %H:%M:%S')
     while True:
         flag = int(start.strftime('%y%m%d'))
-        if flag >= 241219:
+        if flag >= 230201:
             break
         if not os.path.exists('./datas/m30/%d.csv' % flag):
             start = start + relativedelta(days=1)
@@ -376,6 +379,9 @@ def backtest_chan():
                     # 天数据长度 数据文件夹 数据周期码 通达信周期码
                     count = chan_min.input(l + 1, './datas/m1', 1, 0)
                     chan_min.output(count, l + 1, './datas/m1', 1, 0)
+                #l = (i * 6) + j
+                #chan_mid.input(l + 1, './datas/m5', 5, 1)
+            #chan_max.input(i + 1, './datas/m30', 30, 3)
         print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
             chan_min.trade_count, chan_min.enter_count, chan_min.enter_longs, chan_min.enter_shorts,
             chan_min.exit_count, chan_min.exit_longs, chan_min.exit_shorts, chan_min.lost_count, chan_min.profit_count))
