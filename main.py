@@ -113,6 +113,8 @@ class chan(kline):
 
     def input(self, length, path, flag, key):
         currents, high, low, close, start = self.currenter(length, path, flag)
+        #if currents[-1][high] != self.temp_high and currents[-1][low] != self.temp_low:
+        #    print('error flag:%d high:%.2f/%.2f low:%.2f/%.2f' % (flag, currents[-1][high], self.temp_high, currents[-1][low], self.temp_low))
         self.update(currents, high, low, close)
         self.temp_init()
         return self.call(key, currents, high, low, close, start)
@@ -411,11 +413,11 @@ def backtest_chan():
     chan_min.init()
 
     st = time.time()
-    daily = datetime.strptime('2023-01-01 09:30:00', '%Y-%m-%d %H:%M:%S')
-    #daily = datetime.strptime('2024-12-18 15:00:00', '%Y-%m-%d %H:%M:%S')
+    daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
+    #daily = datetime.strptime('2024-12-20', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
-        if flag >= 230201:
+        if flag >= 240101:
             break
         if not os.path.exists('./datas/m30/%d.csv' % flag):
             daily += relativedelta(days=1)
@@ -456,12 +458,12 @@ def backtest_chan():
         daily += relativedelta(days=1)
         '''
         i = ((11 - 9) + (15 - 13)) * 2
-        chan_max.input(i, './datas/m30', 30, 3)
+        chan_max.input(i + 1, './datas/m30', 30, 3)
         i = i * 6
-        chan_mid.input(i, './datas/m5', 5, 1)
+        chan_mid.input(i + 1, './datas/m5', 5, 1)
         i = i * 5
-        count = chan_min.input(i, './datas/m1', 1, 0)
-        chan_min.output(count, i, './datas/m1', 1, 0)
+        count = chan_min.input(i + 1, './datas/m1', 1, 0)
+        chan_min.output(count, i + 1, './datas/m1', 1, 0)
         break
         '''
     print('耗时: {:.2f}秒'.format(time.time() - st))
