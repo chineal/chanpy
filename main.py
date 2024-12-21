@@ -164,11 +164,16 @@ class chan(kline):
             last_date_time  = self.historys[-1][0]
         temp_date_time      = datetime.strptime(last_date_time, "%Y-%m-%d %H:%M:%S")
         temp_time           = int(temp_date_time.strftime('%H%M%S'))
-        temp_time += flag * 100
-        if temp_time > 113000:
-            temp_time = 130000
-        elif temp_time > 150000:
-            temp_time = 93000
+
+        temp_time           += flag * 100
+        if temp_time > 113000 and temp_time < 130000:
+            temp_time       = 130000 + flag * 100
+        elif temp_time > 146000:
+            temp_time       = 93000 + flag * 100
+        if temp_time % 10000 >= 6000:
+            temp_time       = int(temp_time / 10000)
+            temp_time       += 1
+            temp_time       *= 10000
         return temp_time
 
     def call(self, key, currents, index_high, index_low, index_close, start):
