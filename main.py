@@ -99,6 +99,9 @@ class chan(kline):
             self.temp_high  = datas.temp_high
         if self.temp_low > datas.temp_low:
             self.temp_low   = datas.temp_low
+        self.temp_high     = 300
+        self.temp_low     = 300
+        self.temp_close     = 300
         self.call(key, currents, high, low, close, start)
     
     def recode(self, day, prevs, path, key, flag):
@@ -210,7 +213,7 @@ class chan(kline):
             highs[i]    = self.temp_high
             lows[i]     = self.temp_low
             closes[i]   = self.temp_close
-            
+
         period  = f2p(key)
         mhs     = buf()
         mls     = buf()
@@ -418,11 +421,11 @@ def backtest_chan():
     chan_min.init()
 
     st = time.time()
-    daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
-    #daily = datetime.strptime('2024-12-20', '%Y-%m-%d')
+    daily = datetime.strptime('2024-11-07', '%Y-%m-%d')
+    #daily = datetime.strptime('2024-11-07', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
-        if flag >= 240101:
+        if flag >= 241221:
             break
         if not os.path.exists('./datas/m30/%d.csv' % flag):
             daily += relativedelta(days=1)
@@ -435,25 +438,21 @@ def backtest_chan():
             continue
         # 基础日期 历史数据长度 历史数据文件夹
         chan_min.recode(daily, 1, './datas/m1', 0, 1)
-        chan_mid.recode(daily, 6, './datas/m5', 1, 5)
-        chan_max.recode(daily, 12, './datas/m30', 3, 30)
-        
-        for i in range(((11 - 9) + (15 - 13)) * 60):
+        chan_mid.recode(daily, 3, './datas/m5', 1, 5)
+        chan_max.recode(daily, 6, './datas/m30', 3, 30)
+
+        end = ((11 - 9) + (15 - 13)) * 60
+        for i in range(end - end, end):
             currents, high, low, close, start = chan_min.currenter(i + 1, './datas/m1', 1)
             chan_min.update(currents, high, low, close)
-
-            j = int(i / 5)    
             if 0 == (i + 1) % 5:
-                chan_mid.input(j + 1, './datas/m5', 5, 1)
+                chan_mid.input(int((i + 1) / 5), './datas/m5', 5, 1)
             else:
-                chan_mid.temp_update(j, './datas/m5', 5, 1, chan_min)
-
-            j = int(i / 30)
+                chan_mid.temp_update(int(i / 5), './datas/m5', 5, 1, chan_min)
             if 0 == (i + 1) % 30:
-                chan_max.input(j + 1, './datas/m30', 30, 3)
+                chan_max.input(int((i + 1) / 30), './datas/m30', 30, 3)
             else:
-                chan_max.temp_update(j, './datas/m30', 30, 3, chan_mid)
-            
+                chan_max.temp_update(int(i / 30), './datas/m30', 30, 3, chan_mid)
             count = chan_min.call(0, currents, high, low, close, start)
             chan_min.output(count, i + 1, './datas/m1', 1, 0)
 
@@ -462,15 +461,15 @@ def backtest_chan():
             chan_min.exit_count, chan_min.exit_longs, chan_min.exit_shorts, chan_min.lost_count, chan_min.profit_count))
         daily += relativedelta(days=1)
         '''
-        i = ((11 - 9) + (15 - 13)) * 2
-        chan_max.input(i + 1, './datas/m30', 30, 3)
-        i = i * 6
-        chan_mid.input(i + 1, './datas/m5', 5, 1)
-        i = i * 5
-        count = chan_min.input(i + 1, './datas/m1', 1, 0)
+        i = ((11 - 9) + (15 - 13)) * 60
+        currents, high, low, close, start = chan_min.currenter(i, './datas/m1', 1)
+        chan_min.update(currents, high, low, close)
+        chan_mid.input(int(i / 5), './datas/m5', 5, 1)
+        chan_max.input(int(i / 30), './datas/m30', 30, 3)
+        count = chan_min.call(0, currents, high, low, close, start)
         chan_min.output(count, i + 1, './datas/m1', 1, 0)
-        break
         '''
+        break
     print('耗时: {:.2f}秒'.format(time.time() - st))
 
 rust_chan_dll.RegisterCpyInit()
