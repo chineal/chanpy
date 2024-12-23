@@ -26,6 +26,8 @@ class kline:
     temp_low        = 0
 
 class chan(kline):
+    datas_log       = 0
+
     historys        = []#历史数据加载
     bigest          = 0 #最大历史数据
     nexter          = 0 #运行数据开始
@@ -239,7 +241,9 @@ class chan(kline):
         result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(16),  period, closes)
         result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(17),  period, highs)
         result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(18),  period, lows)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(99),  period, f2p(0))
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(99),  period, f2p(self.datas_log))
+
+        self.datas_log = 0
         return count
     
     def cur(self, length, path, flag):
@@ -415,14 +419,28 @@ def schedule_chan():
         schedule.run_pending()
         time.sleep(1)
 
+def backtest_kline(index):
+    currents, high, low, close, start = chan_min.currenter(index + 1, './datas/m1', 1)
+    chan_min.update(currents, high, low, close)
+    if 0 == (index + 1) % 5:
+        chan_mid.input(int((index + 1) / 5), './datas/m5', 5, 1)
+    else:
+        chan_mid.temp_update(int(index / 5), './datas/m5', 5, 1, chan_min)
+    if 0 == (index + 1) % 30:
+        chan_max.input(int((index + 1) / 30), './datas/m30', 30, 3)
+    else:
+        chan_max.temp_update(int(index / 30), './datas/m30', 30, 3, chan_mid)
+    count = chan_min.call(0, currents, high, low, close, start)
+    chan_min.output(count, index + 1, './datas/m1', 1, 0)
+
 def backtest_chan():
     chan_max.init()
     chan_mid.init()
     chan_min.init()
 
     st = time.time()
-    daily = datetime.strptime('2024-11-07', '%Y-%m-%d')
-    #daily = datetime.strptime('2024-11-07', '%Y-%m-%d')
+    daily = datetime.strptime('2024-11-01', '%Y-%m-%d')
+    #daily = datetime.strptime('2024-11-14', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
         if flag >= 241221:
@@ -443,33 +461,16 @@ def backtest_chan():
 
         end = ((11 - 9) + (15 - 13)) * 60
         for i in range(end - end, end):
-            currents, high, low, close, start = chan_min.currenter(i + 1, './datas/m1', 1)
-            chan_min.update(currents, high, low, close)
-            if 0 == (i + 1) % 5:
-                chan_mid.input(int((i + 1) / 5), './datas/m5', 5, 1)
-            else:
-                chan_mid.temp_update(int(i / 5), './datas/m5', 5, 1, chan_min)
-            if 0 == (i + 1) % 30:
-                chan_max.input(int((i + 1) / 30), './datas/m30', 30, 3)
-            else:
-                chan_max.temp_update(int(i / 30), './datas/m30', 30, 3, chan_mid)
-            count = chan_min.call(0, currents, high, low, close, start)
-            chan_min.output(count, i + 1, './datas/m1', 1, 0)
+            backtest_kline(i)
+        '''
+        backtest_kline(14)
+        return
+        '''
 
         print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
             chan_min.trade_count, chan_min.enter_count, chan_min.enter_longs, chan_min.enter_shorts,
             chan_min.exit_count, chan_min.exit_longs, chan_min.exit_shorts, chan_min.lost_count, chan_min.profit_count))
         daily += relativedelta(days=1)
-        '''
-        i = ((11 - 9) + (15 - 13)) * 60
-        currents, high, low, close, start = chan_min.currenter(i, './datas/m1', 1)
-        chan_min.update(currents, high, low, close)
-        chan_mid.input(int(i / 5), './datas/m5', 5, 1)
-        chan_max.input(int(i / 30), './datas/m30', 30, 3)
-        count = chan_min.call(0, currents, high, low, close, start)
-        chan_min.output(count, i + 1, './datas/m1', 1, 0)
-        '''
-        break
     print('耗时: {:.2f}秒'.format(time.time() - st))
 
 rust_chan_dll.RegisterCpyInit()
