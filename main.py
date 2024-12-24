@@ -459,13 +459,13 @@ def backtest_chan():
         chan_mid.recode(daily, 3, './datas/m5', 1, 5)
         chan_max.recode(daily, 6, './datas/m30', 3, 30)
 
-        '''
         end = ((11 - 9) + (15 - 13)) * 60
         for i in range(end - end, end):
             backtest_kline(i)
         '''
         backtest_kline(54)
         return
+        '''
 
         print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
             chan_min.trade_count, chan_min.enter_count, chan_min.enter_longs, chan_min.enter_shorts,
