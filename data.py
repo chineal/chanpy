@@ -104,7 +104,7 @@ def current(m):
         df = pd.DataFrame(datas)
         df.to_csv('./datas/m%d/%d.csv' % (m, recode), index=False)
 
-#history(1)
+history(1)
 current(1)
 current(5)
 current(30)
