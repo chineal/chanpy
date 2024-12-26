@@ -26,7 +26,7 @@ class kline:
     temp_low        = 0
 
 class chan(kline):
-    datas_log       = 0
+    call_flag       = 0
 
     historys        = []#历史数据加载
     bigest          = 0 #最大历史数据
@@ -101,9 +101,6 @@ class chan(kline):
             self.temp_high  = datas.temp_high
         if self.temp_low > datas.temp_low:
             self.temp_low   = datas.temp_low
-        self.temp_high     = 300
-        self.temp_low     = 300
-        self.temp_close     = 300
         self.call(key, currents, high, low, close, start)
     
     def recode(self, day, prevs, path, key, flag):
@@ -112,6 +109,7 @@ class chan(kline):
         end = int(day.strftime('%y%m%d'))
         self.loads(start, end, path)
         rust_chan_dll.RegisterCpyData(key)
+        self.call_flag == -99
         self.call(key, [], 0, 0, 0, 0)
         self.update([], self.high_index, self.low_index, self.close_index)
         self.temp_init()
@@ -241,9 +239,9 @@ class chan(kline):
         result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(16),  period, closes)
         result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(17),  period, highs)
         result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(18),  period, lows)
-        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(99),  period, f2p(self.datas_log))
+        result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(99),  period, f2p(self.call_flag))
 
-        self.datas_log = 0
+        self.call_flag = 0
         return count
     
     def cur(self, length, path, flag):
@@ -439,11 +437,11 @@ def backtest_chan():
     chan_min.init()
 
     st = time.time()
-    #daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
-    daily = datetime.strptime('2024-12-16', '%Y-%m-%d')
+    daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
+    #daily = datetime.strptime('2023-10-26', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
-        if flag >= 241221:
+        if flag >= 240101:
             break
         if not os.path.exists('./datas/m30/%d.csv' % flag):
             daily += relativedelta(days=1)
@@ -463,7 +461,7 @@ def backtest_chan():
         for i in range(end - end, end):
             backtest_kline(i)
         '''
-        backtest_kline(54)
+        backtest_kline(120+32-1)
         return
         '''
 
