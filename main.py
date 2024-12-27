@@ -109,7 +109,7 @@ class chan(kline):
         end = int(day.strftime('%y%m%d'))
         self.loads(start, end, path)
         rust_chan_dll.RegisterCpyData(key)
-        self.call_flag == -99
+        self.call_flag = -99
         self.call(key, [], 0, 0, 0, 0)
         self.update([], self.high_index, self.low_index, self.close_index)
         self.temp_init()
@@ -210,9 +210,14 @@ class chan(kline):
         if self.temp_time > 0:
             dates[i]    = self.temp_date
             times[i]    = self.temp_time
+            '''
             highs[i]    = self.temp_high
             lows[i]     = self.temp_low
             closes[i]   = self.temp_close
+            '''
+            highs[i]    = 0
+            lows[i]     = 0
+            closes[i]   = 0
 
         period  = f2p(key)
         mhs     = buf()
@@ -438,11 +443,11 @@ def backtest_chan():
 
     st = time.time()
     daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
-    #daily = datetime.strptime('2023-10-26', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
         if flag >= 240101:
             break
+
         if not os.path.exists('./datas/m30/%d.csv' % flag):
             daily += relativedelta(days=1)
             continue
@@ -453,16 +458,20 @@ def backtest_chan():
             daily += relativedelta(days=1)
             continue
         # 基础日期 历史数据长度 历史数据文件夹
-        chan_min.recode(daily, 1, './datas/m1', 0, 1)
-        chan_mid.recode(daily, 3, './datas/m5', 1, 5)
-        chan_max.recode(daily, 6, './datas/m30', 3, 30)
+        chan_min.recode(daily, 12*0+1, './datas/m1', 0, 1)
+        chan_mid.recode(daily, 12*0+3, './datas/m5', 1, 5)
+        chan_max.recode(daily, 12*0+6, './datas/m30', 3, 30)
 
         end = ((11 - 9) + (15 - 13)) * 60
         for i in range(end - end, end):
             backtest_kline(i)
         '''
-        backtest_kline(120+32-1)
-        return
+        hour = 15
+        minute = 00
+        if hour < 12:
+            backtest_kline(60*(hour-9)-30+minute-1)
+        else:
+            backtest_kline(120+60*(hour-13)+minute-1)
         '''
 
         print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
