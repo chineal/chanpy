@@ -20,12 +20,12 @@ from glob import glob
 datas = {}
 bigest = 0
 
-def history(m):
+def history(m, file):
     global datas
     global bigest
 
     try:
-        df = pd.read_csv("datas/if9999.csv", encoding="utf-8")
+        df = pd.read_csv("datas/%s" % file, encoding="utf-8")
         #print(df.index)
         #print(df.iloc[[0]])
         #print(df.iloc[:,0])
@@ -104,7 +104,10 @@ def current(m):
         df = pd.DataFrame(datas)
         df.to_csv('./datas/m%d/%d.csv' % (m, recode), index=False)
 
-history(1)
-current(1)
-current(5)
-current(30)
+#history(1, "if9999-1.csv")
+#history(5, "if9999-5.csv")
+history(15, "if9999-15.csv")
+#history(30, "if9999-30.csv")
+#current(1)
+#current(5)
+#current(30)
