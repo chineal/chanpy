@@ -52,6 +52,8 @@ class chan(kline):
     high_index      = 3
     low_index       = 4
     close_index     = 2
+
+    stroke          = []
     
     def loads(self, start, end, path):
         self.historys   = []
@@ -103,6 +105,17 @@ class chan(kline):
         if self.temp_low > datas.temp_low:
             self.temp_low   = datas.temp_low
         self.call(key, currents, high, low, close, start)
+
+    def show(self, currents, start):
+        dt = []
+        data = []
+        for item in self.historys:
+            dt.append(item[0])
+            data.append(item[1:5])
+        for i in range(start, len(currents)):
+            dt.append(currents[i][0])
+            data.append(currents[i][1:5])
+        return dt, data, self.stroke
     
     def recode(self, day, prevs, path, key, flag):
         last_month = day - relativedelta(days=30*prevs)
@@ -248,6 +261,9 @@ class chan(kline):
         result = rust_chan_dll.RegisterCpyFunc(4, count, out, f2p(99),  period, f2p(self.call_flag))
 
         self.call_flag = 0
+        self.stroke.clear()
+        for frac in fracs:
+            self.stroke.append(frac)
         return count
     
     def cur(self, length, path, flag):

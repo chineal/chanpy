@@ -10,31 +10,6 @@ from chan import chan, init_chan
 chan_max = chan()
 chan_mid = chan()
 chan_min = chan()
-'''
-def run():
-    pass
-def sched_chan():
-    chan_min.init()
-    #chan_min.recode(datetime.now(), 1, './datas/m1', 0, 1)
-    chan_min.recode(datetime.now(), 6, './datas/m30', 3, 30)
-    schedule.every().minute.at(':01').do(run).tag('s_chan')
-    print('chan runing')
-def clear_chan():
-    print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
-        chan_min.trade_count, chan_min.enter_count, chan_min.enter_longs, chan_min.enter_shorts,
-        chan_min.exit_count, chan_min.exit_longs, chan_min.exit_shorts, chan_min.lost_count, chan_min.profit_count))
-    schedule.clear('s_chan')
-    print('chan stoped')
-schedule.every().day.at('09:29:55').do(sched_chan)
-schedule.every().day.at('12:59:55').do(sched_chan)
-schedule.every().day.at('11:30:05').do(clear_chan)
-schedule.every().day.at('15:00:05').do(clear_chan)
-def schedule_chan():
-    #sched_chan()
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-'''
 
 def backtest_kline(index):
     currents, high, low, close, start = chan_min.currenter(index + 1, './datas/m1', 1)
@@ -63,14 +38,28 @@ def backtest_kline(index):
     chan_max.output(count, index + 1, './datas/m30', 30, 3)
     '''
 
-def backtest_once(hour, minute):
+def backtest_once(year, mouth, day, hour, minute, log=0):
+    daily = datetime.strptime('20%02d-%02d-%02d' % (year, mouth, day), '%Y-%m-%d')
+    flag = int(daily.strftime('%y%m%d'))
+    
+    if not os.path.exists('./datas/m30/%d.csv' % flag):
+        daily += relativedelta(days=1)
+        return
+    if not os.path.exists('./datas/m5/%d.csv' % flag):
+        daily += relativedelta(days=1)
+        return
+    if not os.path.exists('./datas/m1/%d.csv' % flag):
+        daily += relativedelta(days=1)
+        return
+    
+    chan_min.recode(daily, 12*1+1, './datas/m1',    0, 1)
+    chan_mid.recode(daily, 12*1+3, './datas/m5',    1, 5)
+    chan_max.recode(daily, 12*1+6, './datas/m30',   3, 30)
+    chan_min.call_flag = log
     if hour < 12:
         backtest_kline(60*(hour-9)-30+minute-1)
     else:
         backtest_kline(120+60*(hour-13)+minute-1)
-    return
-
-
 
 def backtest_chan():
     chan_max.init()
@@ -78,11 +67,11 @@ def backtest_chan():
     chan_min.init()
 
     st = time.time()
-    daily = datetime.strptime('2024-12-01', '%Y-%m-%d')
-    #daily = datetime.strptime('2024-12-18', '%Y-%m-%d')
+    #daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
+    daily = datetime.strptime('2022-01-01', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
-        if flag >= 250101:
+        if flag >= 230101:
             break
         #2====================================================================================================================================================================
         if not os.path.exists('./datas/m30/%d.csv' % flag):
@@ -103,18 +92,12 @@ def backtest_chan():
         #chan_min.recode(daily, 12*0+3, './datas/m5',   1, 5)
 
         #4====================================================================================================================================================================
-
+        
         #end = ((11 - 9) + (15 - 13)) * 2
         #end = ((11 - 9) + (15 - 13)) * 12
         end = ((11 - 9) + (15 - 13)) * 60
         for i in range(end - end, end):
             backtest_kline(i)
-        '''
-        #chan_max.call_flag = 1
-        backtest_once(14, 42)
-        backtest_once(14, 45)
-        return
-        '''
 
         print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
             chan_min.trade_count, chan_min.enter_count, chan_min.enter_longs, chan_min.enter_shorts,
@@ -122,7 +105,21 @@ def backtest_chan():
         daily += relativedelta(days=1)
     print('耗时: {:.2f}秒'.format(time.time() - st))
 
+def pointest_chan():
+    chan_max.init()
+    chan_mid.init()
+    chan_min.init()
+    #250102-135900
+    #backtest_once(25, 1, 2, 13, 59)
+    #250107-103000
+    #backtest_once(25, 1, 7, 10, 30)
+    #250107-140000
+    #backtest_once(25, 1, 7, 14, 0)
+    #backtest_once(25, 1, 13, 9, 31, 1)
+    backtest_once(23, 2, 2, 13, 42, 1)
+
 init_chan()
 if __name__ == "__main__":
     #schedule_chan()
     backtest_chan()
+    #pointest_chan()
