@@ -24,19 +24,6 @@ def backtest_kline(index):
         chan_max.temp_update(int(index / 30), './datas/m30', 30, 3, chan_mid)
     count = chan_min.call(0, currents, high, low, close, start)
     chan_min.output(count, index + 1, './datas/m1', 1, 0)
-    #1========================================================================================================================================================================
-    '''
-    currents, high, low, close, start = chan_min.currenter(index + 1, './datas/m5', 5)
-    chan_min.update(currents, high, low, close)
-    count = chan_min.call(1, currents, high, low, close, start)
-    chan_min.output(count, index + 1, './datas/m5', 5, 1)
-    '''
-    '''
-    currents, high, low, close, start = chan_max.currenter(index + 1, './datas/m30', 30)
-    chan_max.update(currents, high, low, close)
-    count = chan_max.call(3, currents, high, low, close, start)
-    chan_max.output(count, index + 1, './datas/m30', 30, 3)
-    '''
 
 def backtest_once(year, mouth, day, hour, minute, log=0):
     daily = datetime.strptime('20%02d-%02d-%02d' % (year, mouth, day), '%Y-%m-%d')
@@ -67,13 +54,12 @@ def backtest_chan():
     chan_min.init()
 
     st = time.time()
-    #daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
-    daily = datetime.strptime('2022-01-01', '%Y-%m-%d')
+    daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
-        if flag >= 230101:
+        if flag >= 230501:
             break
-        #2====================================================================================================================================================================
+        
         if not os.path.exists('./datas/m30/%d.csv' % flag):
             daily += relativedelta(days=1)
             continue
@@ -88,13 +74,7 @@ def backtest_chan():
         chan_min.recode(daily, 12*1+1, './datas/m1',    0, 1)
         chan_mid.recode(daily, 12*1+3, './datas/m5',    1, 5)
         chan_max.recode(daily, 12*1+6, './datas/m30',   3, 30)
-        #3====================================================================================================================================================================
-        #chan_min.recode(daily, 12*0+3, './datas/m5',   1, 5)
-
-        #4====================================================================================================================================================================
         
-        #end = ((11 - 9) + (15 - 13)) * 2
-        #end = ((11 - 9) + (15 - 13)) * 12
         end = ((11 - 9) + (15 - 13)) * 60
         for i in range(end - end, end):
             backtest_kline(i)
@@ -116,7 +96,11 @@ def pointest_chan():
     #250107-140000
     #backtest_once(25, 1, 7, 14, 0)
     #backtest_once(25, 1, 13, 9, 31, 1)
-    backtest_once(23, 2, 2, 13, 42, 1)
+    #backtest_once(23, 5, 23, 13, 8, 1)
+    #[15:25:27]_recode_30分钟倒数第1笔(时间：241014-133000，点位：3979)，方向：1，于(时间：241016-103300，点位：3817.8)预测反转，当前段：241008-100000
+    #backtest_once(24, 10, 16, 10, 33, 1)
+    #backtest_once(24, 11, 12, 11, 22, 1)
+    backtest_once(24, 4, 29, 11, 30, 1)
 
 init_chan()
 if __name__ == "__main__":
