@@ -14,14 +14,17 @@ chan_min = chan()
 def backtest_kline(index):
     currents, high, low, close, start = chan_min.currenter(index + 1, './datas/m1', 1)
     chan_min.update(currents, high, low, close)
+
     if 0 == (index + 1) % 5:
         chan_mid.input(int((index + 1) / 5), './datas/m5', 5, 1)
     else:
         chan_mid.temp_update(int(index / 5), './datas/m5', 5, 1, chan_min)
+
     if 0 == (index + 1) % 30:
         chan_max.input(int((index + 1) / 30), './datas/m30', 30, 3)
     else:
         chan_max.temp_update(int(index / 30), './datas/m30', 30, 3, chan_mid)
+
     count = chan_min.call(0, currents, high, low, close, start)
     chan_min.output(count, index + 1, './datas/m1', 1, 0)
 
@@ -54,10 +57,10 @@ def backtest_chan():
     chan_min.init()
 
     st = time.time()
-    daily = datetime.strptime('2023-01-01', '%Y-%m-%d')
+    daily = datetime.strptime('2024-04-01', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
-        if flag >= 230501:
+        if flag >= 240501:
             break
         
         if not os.path.exists('./datas/m30/%d.csv' % flag):
@@ -100,7 +103,7 @@ def pointest_chan():
     #[15:25:27]_recode_30分钟倒数第1笔(时间：241014-133000，点位：3979)，方向：1，于(时间：241016-103300，点位：3817.8)预测反转，当前段：241008-100000
     #backtest_once(24, 10, 16, 10, 33, 1)
     #backtest_once(24, 11, 12, 11, 22, 1)
-    backtest_once(24, 4, 29, 11, 30, 1)
+    backtest_once(24, 1, 2, 9, 31, 1)
 
 init_chan()
 if __name__ == "__main__":
