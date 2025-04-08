@@ -1,8 +1,8 @@
 import ctypes
 import os
 
-import akshare as ak
-import pandas as pd
+#import akshare as ak
+import csv
 
 from glob import glob
 from datetime import datetime
@@ -61,9 +61,9 @@ class chan(kline):
         self.nexter     = 0
         files           = []
         csvs            = glob('%s/*.csv' % path)
-        for csv in csvs:
-            last = csv.rfind('\\')
-            date = int(csv[last + 1 : -4])
+        for c in csvs:
+            last = c.rfind('\\')
+            date = int(c[last + 1 : -4])
             if date >= end:
                 self.nexter = date
                 break
@@ -72,10 +72,26 @@ class chan(kline):
         files.sort()
         self.bigest = files[-1]
         for file in files:
-            df = pd.read_csv('%s/%d.csv' % (path, file), encoding='utf-8')
-            self.historys.extend(df.values.tolist())
+            data_list = self.csv2list(path, file)
+            self.historys.extend(data_list)
         print('data start:%d data size:%d file count:%d' %(start, len(self.historys), len(files)))
 
+    def csv2list(self, path, file):
+        data_list = []
+        with open('%s/%d.csv' % (path, file), 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            for rows in reader:
+                if rows[0] == 'datime':
+                    continue
+                row_list = []
+                for row in rows:
+                    try:
+                        row_list.append(float(row))
+                    except ValueError:
+                        row_list.append(row)
+                data_list.append(row_list)
+        return data_list
+        
     def init(self):
         self.trade_count    = 0
         self.enter_count    = 0
@@ -141,14 +157,15 @@ class chan(kline):
         low   = self.low_index
         close = self.close_index
         if length > 0 and self.nexter > 0:
-            df = pd.read_csv('%s/%d.csv' % (path, self.nexter), encoding='utf-8')
-            currents = df.values.tolist()[:length]
+            data_list = self.csv2list(path, self.nexter)
+            currents = data_list[:length]
         else:
-            high  = 2
-            low   = 3
-            close = 4
-            futures_zh_minute_sina_df = ak.futures_zh_minute_sina(symbol='IF0', period=str(flag))
-            currents = futures_zh_minute_sina_df.values.tolist()
+            # high  = 2
+            # low   = 3
+            # close = 4
+            # futures_zh_minute_sina_df = ak.futures_zh_minute_sina(symbol='IF0', period=str(flag))
+            # currents = futures_zh_minute_sina_df.values.tolist()
+            pass
             
         start   = 0
         for current in currents:
