@@ -6,9 +6,9 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from chan import chan, init_chan
 
-#chan_pls = chan()
-chan_max = chan()
-chan_mid = chan()
+# chan_pls = chan()
+# chan_max = chan()
+# chan_mid = chan()
 chan_min = chan()
 
 def backtest_kline(index):
@@ -43,8 +43,8 @@ def backtest_once(year, mouth, day, hour, minute, log=0):
         return
     
     chan_min.recode(daily, 12*1+1, './datas/m1',    0, 1)
-    chan_mid.recode(daily, 12*1+3, './datas/m5',    1, 5)
-    chan_max.recode(daily, 12*1+6, './datas/m30',   3, 30)
+    # chan_mid.recode(daily, 12*1+3, './datas/m5',    1, 5)
+    # chan_max.recode(daily, 12*1+6, './datas/m30',   3, 30)
     chan_min.call_flag = log
     if hour < 12:
         backtest_kline(60*(hour-9)-30+minute-1)
@@ -52,35 +52,37 @@ def backtest_once(year, mouth, day, hour, minute, log=0):
         backtest_kline(120+60*(hour-13)+minute-1)
 
 def backtest_chan():
-    chan_max.init()
-    chan_mid.init()
+    # chan_max.init()
+    # chan_mid.init()
     chan_min.init()
 
     st = time.time()
-    daily = datetime.strptime('2024-04-01', '%Y-%m-%d')
+    daily = datetime.strptime('2025-03-01', '%Y-%m-%d')
     while True:
         flag = int(daily.strftime('%y%m%d'))
-        if flag >= 240501:
+        if flag >= 250401:
             break
         
-        if not os.path.exists('./datas/m30/%d.csv' % flag):
-            daily += relativedelta(days=1)
-            continue
-        if not os.path.exists('./datas/m5/%d.csv' % flag):
-            daily += relativedelta(days=1)
-            continue
+        # if not os.path.exists('./datas/m30/%d.csv' % flag):
+        #     daily += relativedelta(days=1)
+        #     continue
+        # if not os.path.exists('./datas/m5/%d.csv' % flag):
+        #     daily += relativedelta(days=1)
+        #     continue
         if not os.path.exists('./datas/m1/%d.csv' % flag):
             daily += relativedelta(days=1)
             continue
 
         # 基础日期 历史数据长度 历史数据文件夹
         chan_min.recode(daily, 12*1+1, './datas/m1',    0, 1)
-        chan_mid.recode(daily, 12*1+3, './datas/m5',    1, 5)
-        chan_max.recode(daily, 12*1+6, './datas/m30',   3, 30)
+        # chan_mid.recode(daily, 12*1+3, './datas/m5',    1, 5)
+        # chan_max.recode(daily, 12*1+6, './datas/m30',   3, 30)
         
-        end = ((11 - 9) + (15 - 13)) * 60
+        end = int(((11 - 9) + (15 - 13)) * 60 / 1)
         for i in range(end - end, end):
-            backtest_kline(i)
+            # backtest_kline(i)
+            chan_min.input(int(i + 1), './datas/m1', 1, 0)
+            # chan_mid.input(int(i + 1), './datas/m5', 5, 1)
 
         print('trade:%d enter:%d %d %d exit:%d %d %d lost:%d profit:%.2f' % (
             chan_min.trade_count, chan_min.enter_count, chan_min.enter_longs, chan_min.enter_shorts,
@@ -89,8 +91,8 @@ def backtest_chan():
     print('耗时: {:.2f}秒'.format(time.time() - st))
 
 def pointest_chan():
-    chan_max.init()
-    chan_mid.init()
+    # chan_max.init()
+    # chan_mid.init()
     chan_min.init()
     #250102-135900
     #backtest_once(25, 1, 2, 13, 59)
