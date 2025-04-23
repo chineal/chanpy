@@ -1,7 +1,7 @@
 import ctypes
 import os
 
-#import akshare as ak
+import akshare as ak
 import csv
 
 from glob import glob
@@ -133,8 +133,8 @@ class chan(kline):
             data.append(currents[i][1:5])
         return dt, data, self.stroke
     
-    def recode(self, day, prevs, path, key, flag):
-        last_month = day - relativedelta(days=30*prevs)
+    def recode(self, day, prevs, path, key, flag, mouth=30):
+        last_month = day - relativedelta(days=mouth*prevs)
         start = int(last_month.strftime('%y%m%d'))
         end = int(day.strftime('%y%m%d'))
         self.loads(start, end, path)
@@ -160,11 +160,11 @@ class chan(kline):
             data_list = self.csv2list(path, self.nexter)
             currents = data_list[:length]
         else:
-            # high  = 2
-            # low   = 3
-            # close = 4
-            # futures_zh_minute_sina_df = ak.futures_zh_minute_sina(symbol='IF0', period=str(flag))
-            # currents = futures_zh_minute_sina_df.values.tolist()
+            high  = 2
+            low   = 3
+            close = 4
+            futures_zh_minute_sina_df = ak.futures_zh_minute_sina(symbol='AU0', period=str(flag))
+            currents = futures_zh_minute_sina_df.values.tolist()
             pass
             
         start   = 0

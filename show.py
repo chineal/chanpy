@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from pyecharts import options as opts
-from pyecharts.charts import Kline, Line
+from pyecharts.charts import Kline
 from chan import chan as Chan
 
 chan = Chan()
@@ -19,7 +19,7 @@ def backtest_kline(index):
 def backtest_once(year, mouth, day, hour, minute, log=0):
     daily = datetime.strptime('20%02d-%02d-%02d' % (year, mouth, day), '%Y-%m-%d')
     flag = int(daily.strftime('%y%m%d'))
-    chan.recode(daily, 1*1+1, './datas/m1', 0, 1)
+    chan.recode(daily, 1, './datas/m1', 0, 1, 1)
     chan.call_flag = log
     if hour < 12:
         return backtest_kline(60*(hour-9)-30+minute-1)
@@ -57,5 +57,5 @@ def draw_kline(dt):
 
 if __name__ == '__main__':
     chan.init()
-    dt, data, stroke = backtest_once(25, 3, 29, 15, 0)
+    dt, data, stroke = backtest_once(25, 4, 22, 24, 00)
     draw_kline(dt)
